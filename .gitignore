@@ -5,6 +5,7 @@ __pycache__/
 .idea
 pyvenv.cfg
 daEnv
+*.DS_Store
 # C extensions
 *.so
 

@@ -1,13 +1,10 @@
-import json
+import boto3
+import ast
+import copy
 
 def lambda_handler(event, context):
-    import boto3
-    import ast
-    import copy
 
     snsMessage = event['Records'][0]['Sns']['Message']
-
-
     rawQueueUrl = 'https://sqs.eu-west-2.amazonaws.com/005261323353/raw-image'
     doneQueueUrl = 'https://sqs.eu-west-2.amazonaws.com/005261323353/done-image'
 
@@ -21,13 +18,13 @@ def lambda_handler(event, context):
             ],
             WaitTimeSeconds=5,
         )
-        if not response.get('Messages'): # TODO make this not stop while usign lambda functions
+        if not response.get('Messages'):
             continue
         message = response['Messages'][0]
         receiptHandle = message['ReceiptHandle']
         rawImage = message['Body']
         id = message['MessageAttributes']['Id']['StringValue']
-        if (id != snsMessage):
+        if (id.split(';')[0] != snsMessage.split(';')[0]):
             continue
         imageFilter = message['MessageAttributes']['Filter']['StringValue']
         imageFilterFactor = float(message['MessageAttributes']['FilterFactor']['StringValue'])
@@ -76,7 +73,7 @@ def lambda_handler(event, context):
 
         if receivedId == 0:
             resultImage = resultImage[:-4]
-        elif receivedId == toReceiveMessages - 1: #TODO chunk size
+        elif receivedId == toReceiveMessages - 1:
             resultImage = resultImage[4:]
         else:
             resultImage = resultImage[4:-4]
@@ -98,4 +95,4 @@ def lambda_handler(event, context):
             QueueUrl=rawQueueUrl,
             ReceiptHandle=receiptHandle
         )
-        exit()
+        return
